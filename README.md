@@ -81,6 +81,5 @@ Az alkalmazás elérhető a http://localhost:8080 címen, akár lokálisan futta
 A függőségek telepítése:
 ```bash
 npm install
-<img width="939" height="736" alt="Képernyőkép 2025-12-04 175409" src="https://github.com/user-attachments/assets/ddf345cc-de33-4cea-a55c-c158cf629a8e" />
-<img width="1665" height="641" alt="Képernyőkép 2025-12-04 175556" src="https://github.com/user-attachments/assets/1a6b0b33-bde5-4cbd-834b-aab2d40b72dc" />
+
 
