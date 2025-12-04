@@ -1,0 +1,53 @@
+name: CI/CD Pipeline to Docker Hub
+
+# Meghatározza, hogy milyen eseményekre fusson le a pipeline
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+# A környezeti változók (env) beállítása, 
+# a Secret-ekre hivatkozva
+env:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  # Az image neve a Secret-ből
+  DOCKER_IMAGE: ${{ secrets.DOCKER_IMAGE_NAME }} 
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⬇️ Kód Letöltése (Checkout)
+        # Action a kód letöltésére a GitHub repóból
+        uses: actions/checkout@v4
+        # Megjegyzés: Ha a Dockerfile-ban használsz build argumentumokat, itt add meg őket.
+
+      - name: ⚙️ Docker Metadata Létrehozása
+        # Az image tagek (címkék) automatikus generálása (pl. latest, commit hash)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is-default-branch}}
+            type=sha
+
+      - name: 🔑 Bejelentkezés a Docker Registry-be
+        # Bejelentkezés a Docker Hub-ra a Secret-ök segítségével
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          # A PAT tokent a DOCKER_PASSWORD Secret tartalmazza
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🏗️ Docker Image Buildelése és Pusholása
+        # Buildeli az image-et a Dockerfile alapján, és feltölti a Docker Hub-ra
+        uses: docker/build-push-action@v5
+        with:
+          context: . # A Dockerfile-t a gyökérmappában keresi
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
