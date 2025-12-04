@@ -1,18 +1,14 @@
 name: CI/CD Pipeline to Docker Hub
 
-# Meghatározza, hogy milyen eseményekre fusson le a pipeline
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
 
-# A környezeti változók (env) beállítása, 
-# a Secret-ekre hivatkozva
 env:
   DOCKER_REGISTRY: docker.io
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  # Az image neve a Secret-ből
   DOCKER_IMAGE: ${{ secrets.DOCKER_IMAGE_NAME }} 
 
 jobs:
@@ -20,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: ⬇️ Kód Letöltése (Checkout)
+      - name: Checkout Code
         uses: actions/checkout@v4
         
-      - name: ⚙️ Docker Metadata Létrehozása
-        # Ez a rész felel a "latest" és a "sha" tag generálásáért
+      - name: Generate Docker Metadata
+        # Fixálva a korábbi szintaktikai hibák miatt!
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -33,15 +29,13 @@ jobs:
             type=sha
             type=raw,value=latest,enable=true
 
-      - name: 🔑 Bejelentkezés a Docker Registry-be
-        # Bejelentkezés a kijavított Secrets (DOCKER_USERNAME és DOCKER_PASSWORD) segítségével
+      - name: Log in to Docker Registry
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 🏗️ Docker Image Buildelése és Pusholása
-        # Buildeli az image-et a gyökérkönyvtárban lévő Dockerfile alapján, és feltölti
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: . 
